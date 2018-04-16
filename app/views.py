@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
 __author__ = u'Jiang Wen'
-from flask import render_template, flash, request, abort, redirect
+from flask import render_template, flash, request, abort, redirect, url_for
 from app import app
 from flask_login import LoginManager, login_user, login_required, logout_user
+from app.forms import BaseLogin
 
 
 @app.route ( '/' )
@@ -16,8 +17,33 @@ def login():
     # Here we use a class of some kind to represent and validate our
     # client-side form data. For example, WTForms is a library that will
     # handle this for us, and we use a custom LoginForm to validate.
-    if request.method == 'GET':
-        return render_template ( 'login.html' )
+    # if request.method == 'GET':
+    #     return render_template ( 'login.html' )
+    error = None
+    if request.method == 'POST':
+        if request.form['username'] != app.config['USERNAME']:
+            error = 'Invalid username'
+        elif request.form['password'] != app.config['PASSWORD']:
+            error = 'Invalid password'
+        else:
+            # if request.form['remember'] == 1:
+            #     pass
+            flash ( 'You were logged in', category='success' )
+            return redirect ( url_for ( 'index' ) )
+    if error is not None:
+        flash ( error, category='danger' )
+    return render_template ( 'login.html', error=error )
+    # form = BaseLogin ()
+    # if form.validate_on_submit ():
+    #     # 跳转
+    #     flash ( form.name.data + '|' + form.password.data )
+    #     return redirect ( url_for ( 'index' ) )
+    # else:
+    #     # 渲染
+    #     return render_template ( 'login.html', form=form )
+    #     # return redirect(404)
+
+    return redirect ( 404 )
     # form = LoginForm ()
     # if form.validate_on_submit ():
     #     # Login and validate the user.
