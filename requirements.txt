@@ -1,1 +1,5 @@
+Flask = 0.12.2
 flask-bootstrap = 3.3.7.1
+flask-login = 0.4.1
+Jinja2 = 2.10
+flask
