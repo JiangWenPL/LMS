@@ -9,18 +9,22 @@
                 <div class="container">
                     <div class="form row">
                         <div class="form-horizontal col-md-offset-3" id="login_form">
-                            <form method="post">
+                            <form action="{{ url_for('login') }}" method="post">
+                                {{ form.hidden_tag() }}
                                 <h3 class="form-title">LOGIN</h3>
                                 <div class="col-md-9">
                                     <div class="form-group">
                                         <i class="fa fa-user fa-lg"></i>
                                         <input class="form-control required" type="text" placeholder="Username"
                                                id="username" name="username" autofocus="autofocus" maxlength="20"/>
+                                        {#                                        {{ form.username }}#}
                                     </div>
                                     <div class="form-group">
                                         <i class="fa fa-lock fa-lg"></i>
                                         <input class="form-control required" type="password" placeholder="Password"
                                                id="password" name="password" maxlength="8"/>
+                                        {#                                        {{ formFiled }}#}
+
                                     </div>
                                     <div class="form-group">
                                         <label class="checkbox">

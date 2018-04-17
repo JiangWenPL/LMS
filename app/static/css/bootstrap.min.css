@@ -5247,7 +5247,7 @@ input[type="submit"].btn-block, input[type="reset"].btn-block, input[type="butto
 
 @-webkit-keyframes progress-bar-stripes {
     from {
-        background-position: 10px 0
+        background-position: 0.625rem 0
     }
     to {
         background-position: 0 0
@@ -5256,7 +5256,7 @@ input[type="submit"].btn-block, input[type="reset"].btn-block, input[type="butto
 
 @keyframes progress-bar-stripes {
     from {
-        background-position: 10px 0
+        background-position: 0.625rem 0
     }
     to {
         background-position: 0 0
@@ -5267,9 +5267,9 @@ input[type="submit"].btn-block, input[type="reset"].btn-block, input[type="butto
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
-    height: 10px;
+    height: 0.625rem;
     overflow: hidden;
-    font-size: 10px;
+    font-size: 0.625rem;
     background-color: #ecf0f1;
     border-radius: 0.25rem
 }
@@ -5302,7 +5302,7 @@ input[type="submit"].btn-block, input[type="reset"].btn-block, input[type="butto
 
 .progress-bar-striped {
     background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
-    background-size: 10px 10px
+    background-size: 0.625rem 0.625rem
 }
 
 .progress-bar-animated {
