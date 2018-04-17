@@ -1,23 +1,28 @@
 # -*- coding:utf-8 -*-
 __author__ = u'Jiang Wen'
 from flask import render_template, flash, request, abort, redirect, url_for, g
-from app import app, db, lm
+from app import app, db, lm, csv_set
 from flask_login import login_user, login_required, logout_user, current_user
-from app.forms import LoginForm
+from app.forms import LoginForm, CheckInForm, FileForm
 from flask_bootstrap import Bootstrap
-from app.models import Admin
+from app.models import Admin, Book
+import csv
 
 Bootstrap ( app )
 
 
 @app.before_first_request
-def create_db():
-    # Recreate database each time for demo
+def init_view():
+    # recreate database every time
     db.drop_all ()
     db.create_all ()
     admins = [Admin ( 0, 'a', 'a.name', 'admin@example.com' ), Admin ( 1, 'b', 'b.name', 'bdmin@example.com' )]
     db.session.add_all ( admins )
     db.session.commit ()
+    # Add login guider
+    lm.login_view = url_for ( 'login' )
+    lm.login_message = "Please login"
+    lm.login_message_category = 'info'
 
 
 @app.before_request
@@ -31,13 +36,54 @@ def index():
     return render_template ( "index.html" )
 
 
+@app.route ( '/check_in', methods=['GET', 'POST'] )
+@login_required
+def check_in():
+    single_form = CheckInForm ()
+    group_form = FileForm ()
+    if request.method == 'POST' and request.form['kinds'] == 'single':
+        if single_form.validate_on_submit ():
+            try:
+                book = Book ( bookID=single_form.bookID.data, category=single_form.category.data,
+                              book_name=single_form.book_name.data,
+                              press=single_form.press.data, year=single_form.year.data, author=single_form.author.data,
+                              price=single_form.price.data,
+                              stock=single_form.stock.data )
+                db.session.add ( book )
+                db.session.commit ()
+                flash ( Book.query.all (), 'success' )
+                flash ( 'Check in book success', 'success' )
+            except Exception as e:
+                flash ( e, 'danger' )
+        elif request.method == 'POST':
+            flash ( 'Invalid input', 'warning' )
+    elif request.method == 'POST' and request.form['kinds'] == 'group':
+        if group_form.validate_on_submit ():
+            try:
+                csv_name = csv_set.save ( request.files['csv'] )
+                flash ( 'Upload file success', 'info' )
+                books = []
+                with open ( app.config['UPLOADED_CSV_DEST'] + '/' + csv_name ) as csv_file:
+                    reader = csv.reader ( csv_file )
+                    for line in reader:
+                        assert len ( line ) == Book.length, "Not match col size"
+                        books.append (
+                            Book ( bookID=line[0], category=line[1], book_name=line[2], press=line[3], year=line[4],
+                                   author=line[5], price=line[6], stock=line[7] ) )
+                    db.session.add_all ( books )
+                    db.session.commit ()
+            except Exception as e:
+                flash ( e, 'danger' )
+            else:
+                flash ( 'Success load into database', 'success' )
+        elif request.method == 'POST':
+            flash ( 'Invalid file', 'warning' )
+
+    return render_template ( "check_in.html", single_form=single_form, group_form=group_form )
+
+
 @app.route ( '/login', methods=['GET', 'POST'] )
 def login():
-    # Here we use a class of some kind to represent and validate our
-    # client-side form data. For example, WTForms is a library that will
-    # handle this for us, and we use a custom LoginForm to validate.
-    # if request.method == 'GET':
-    #     return render_template ( 'login.html' )
     error = None
     if g.user is not None and g.user.is_authenticated:
         return redirect ( url_for ( 'index' ) )
@@ -62,25 +108,7 @@ def login():
         flash ( error, category='danger' )
     return render_template ( 'login.html', form=form, error=error )
 
-    return redirect ( 404 )
-
-
-# form = LoginForm ()
-# if form.validate_on_submit ():
-#     # Login and validate the user.
-#     # user should be an instance of your `User` class
-#     login_user ( user )
-#
-#     flash ( 'Logged in successfully.' )
-#
-#     next = request.args.get ( 'next' )
-#     # next_is_valid should check if the user has valid
-#     # permission to access the `next` url
-#     if not next_is_valid ( next ):
-#         return abort ( 400 )
-#
-#     return redirect ( next or flask.url_for ( 'index' ) )
-# return render_template ( 'login.html', form=form )
+@app.route('/about')
 
 
 @app.route ( '/logout/' )
@@ -89,6 +117,7 @@ def logout():
     logout_user ()  # 登出用户
     flash ( "Logout successful", category='success' )
     return redirect ( url_for ( 'index' ) )
+
 
 @lm.user_loader
 def load_user(id):

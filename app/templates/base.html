@@ -21,16 +21,22 @@
     <div class="collapse navbar-collapse" id="navbarColor01">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-                <a class="nav-link" href="/search.html">Search <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="/search">Search <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/Borrow">Borrow</a>
+                <a class="nav-link" href="/borrow">Borrow</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Pricing</a>
+                <a class="nav-link" href="/check_in">Check in</a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link" href="/return_book">Return</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">About</a>
+                <a class="nav-link" href="/card">Card</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/about">About</a>
             </li>
         </ul>
         {% if g.user.is_authenticated %}
@@ -43,12 +49,12 @@
                 Login
             </button>
         {% endif %}
-        {#    <form class="form-inline my-2 my-lg-0">#}
-        {#      <input class="form-control mr-sm-2" type="text" placeholder="Search">#}
-        {#      <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>#}
-        {#    </form>#}
     </div>
 </nav>
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/index.html">Home</a></li>
+    <li class="breadcrumb-item active">{{ request.path.strip('/').split('.')[0] }}</li>
+</ol>
 <body>
 <div class="container">
     {% with messages = get_flashed_messages(with_categories=true) %}

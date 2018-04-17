@@ -7,3 +7,4 @@ flask-wtf = 0.14.2
 wtforms
 Flask_SQLAlchemy = 2.3.2
 Flask-OpenID = 1.2.5
+flask-uploads

@@ -32,3 +32,34 @@ class Admin ( db.Model ):
     # For debug
     def __repr__(self):
         return '<User %r>' % self.name
+
+
+class Book ( db.Model ):
+    __tablename__ = "book"
+    length = 8
+    bookID = db.Column ( db.Integer, primary_key=True, autoincrement=True )
+    category = db.Column ( db.String ( 32 ) )
+    book_name = db.Column ( db.String ( 32 ) )
+    press = db.Column ( db.String ( 32 ) )
+    year = db.Column ( db.Numeric ( 4, 0 ) )
+    author = db.Column ( db.String ( 32 ) )
+    price = db.Column ( db.Numeric ( 10, 2 ) )
+    stock = db.Column ( db.Integer )
+
+    def __init__(self, bookID, category, book_name, press, year, author, price, stock):
+        try:
+            self.bookID = int ( bookID )
+            self.category = str ( category )
+            self.book_name = str ( book_name )
+            self.press = str ( press )
+            assert int ( year ) > 0 and int ( year ) < 10000, 'year not in (0,10000)'
+            self.year = int ( year )
+            self.author = str ( author )
+            self.price = float ( price )
+            self.stock = int ( stock )
+        except Exception as e:
+            print ( e )
+            raise e
+
+    def __repr__(self):
+        return '<Book Name %r>' % self.book_name

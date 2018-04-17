@@ -2,15 +2,17 @@
 __author__ = u'Jiang Wen'
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-import os
 from flask_login import LoginManager
-from flask_openid import OpenID
+from flask_uploads import UploadSet, configure_uploads, DATA
+import os
 
 app = Flask ( __name__ )
 app.config.from_object ( 'config' )
 db = SQLAlchemy ( app )
-
+csv_set = UploadSet ( 'CSV' )
+app.config['UPLOADED_CSV_DEST'] = os.path.join ( os.path.dirname ( __file__ ), 'static', 'download_data' )
+app.config['UPLOADED_CSV_ALLOW'] = DATA
+configure_uploads ( app, csv_set )
 lm = LoginManager ()
 lm.init_app ( app )
-# oid = OpenID ( app, os.path.join ( basedir, 'tmp' ) )
 from app import models, views
