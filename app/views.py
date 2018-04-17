@@ -3,7 +3,7 @@ __author__ = u'Jiang Wen'
 from flask import render_template, flash, request, abort, redirect, url_for, g
 from app import app, db, lm, csv_set
 from flask_login import login_user, login_required, logout_user, current_user
-from app.forms import LoginForm, CheckInForm, FileForm
+from app.forms import LoginForm, CheckInForm, FileForm, SearchForm
 from flask_bootstrap import Bootstrap
 from app.models import Admin, Book
 import csv
@@ -109,9 +109,17 @@ def login():
     return render_template ( 'login.html', form=form, error=error )
 
 
-@app.route ( '/search' )
+@app.route ( '/search', methods=['GET', 'POST'] )
 def search():
-    return render_template ( 'search.html' )
+    form = SearchForm ()
+    result = {}
+    try:
+        if request.method == 'POST' and form.validate_on_submit ():
+            flash ( 'get it', 'info' )
+            result = Book.query.all ()
+    except Exception as e:
+        flash ( e, 'danger' )
+    return render_template ( 'search.html', form=form, result=result )
 
 
 @app.route ( '/borrow' )

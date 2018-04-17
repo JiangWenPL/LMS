@@ -1,5 +1,153 @@
 {% extends 'base.html' %}
 
 {% block body %}
+    <div class="container">
+        <h4 class="card-title">Search by item</h4>
 
+        <p class="card-text">
+        <form method="POST" class="form-group-sm">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="row clearfix">
+                    <div class="col-sm-4 column">
+                        <div class="form-group-sm">
+                            <label class="col-form-label col-form-label-sm" for="inputSmall">Book ID</label>
+                            <input class="form-control form-control-sm" type="text"
+                                   id="inputSmall" name="bookID" placeholder="Book ID" maxlength="32">
+                        </div>
+                    </div>
+                    <div class="col-md-4 column">
+                        <div class="form-group-sm">
+                            <label class="col-form-label col-form-label-sm" for="inputSmall">Category</label>
+                            <input class="form-control form-control-sm" type="text"
+                                   id="inputSmall" name="category"
+                                   placeholder="Category" maxlength="32">
+                        </div>
+                    </div>
+                    <div class="col-md-4 column">
+                        <div class="form-group-sm">
+                            <label class="col-form-label col-form-label-sm" for="inputSmall">Book Name</label>
+                            <input class="form-control form-control-sm" type="text"
+                                   id="inputSmall" name="book_name"
+                                   placeholder="Book Name" maxlength="32">
+                        </div>
+                    </div>
+                </div>
+                <div class="row clearfix">
+                    <div class="col-sm-4 column">
+                        <div class="form-group-sm">
+                            <label class="col-form-label col-form-label-sm" for="inputSmall">press</label>
+                            <input class="form-control form-control-sm" type="text"
+                                   id="inputSmall" name="press"
+                                   placeholder="Press" maxlength="32">
+                        </div>
+                    </div>
+                    <div class="col-sm-2 column">
+                        <div class="form-group-sm">
+                            <label class="col-form-label col-form-label-sm" for="inputSmall">Year</label>
+                            <input class="form-control form-control-sm" type="text" name="year_from"
+                                   placeholder="from" maxlength="4"
+                                   id="inputSmall">
+                        </div>
+
+                    </div>
+                    <div class="col-sm-2 column">
+                        <div class="form-group-sm">
+                            <label class="col-form-label col-form-label-sm" for="inputSmall">&#12288</label>
+                            <input class="form-control form-control-sm" type="text" name="year_to"
+                                   placeholder="to" maxlength="4"
+                                   id="inputSmall">
+                        </div>
+                    </div>
+                    <div class="col-sm-4 column">
+                        <div class="form-group-sm">
+                            <label class="col-form-label col-form-label-sm" for="inputSmall">Author</label>
+                            <input class="form-control form-control-sm" type="text" name="author"
+                                   placeholder="Author" maxlength="32"
+                                   id="inputSmall">
+                        </div>
+                    </div>
+                </div>
+                <div class="row clearfix">
+                    <div class="col-sm-2 column">
+                        <div class="form-group-sm">
+                            <label class="col-form-label col-form-label-sm" for="inputSmall">Price</label>
+                            <input class="form-control form-control-sm" type="text" name="price_from"
+                                   placeholder="from" maxlength="32"
+                                   id="inputSmall">
+                        </div>
+                    </div>
+                    <div class="col-sm-2 column">
+                        <div class="form-group-sm">
+                            <label class="col-form-label col-form-label-sm" for="inputSmall">&#12288</label>
+                            <input class="form-control form-control-sm" type="text" name="price_to"
+                                   placeholder="to" maxlength="32"
+                                   id="inputSmall">
+                        </div>
+                    </div>
+                    <div class="col-sm-4 column">
+                        <div class="form-group-sm">
+                            <label class="col-form-label col-form-label-sm" for="inputSmall">Stock</label>
+                            <input class="form-control form-control-sm" type="text" name="stock" placeholder="1"
+                                   maxlength="32"
+                                   id="inputSmall">
+                        </div>
+                    </div>
+                    <div class="col-sm-4 column">
+                        <div class="form-group-sm">
+                            <label for="exampleSelect1">Ordery By</label>
+                            <select class="form-control form-control-sm" id="exampleSelect1" name="order_by">
+                                <option value="book_name">Book Name</option>
+                                <option value="bookID">Book ID</option>
+                                <option value="category">Category</option>
+                                <option value="press">Press</option>
+                                <option value="year">Year</option>
+                                <option value="author">Author</option>
+                                <option value="prize">Prize</option>
+                                <option value="stock">Stock</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </fieldset>
+            <div class="row clearfix">
+                <div class="col-xl-3 pull-right">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </form>
+        </p>
+    </div>
+
+    <div class="container">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col">Book ID</th>
+                <th scope="col">Category</th>
+                <th scope="col">Book Name</th>
+                <th scope="col">Press</th>
+                <th scope="col">Year</th>
+                <th scope="col">Author</th>
+                <th scope="col">Price</th>
+                <th scope="col">Stock</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in result %}
+                <tr>
+                    <th scope="row">{{ row.bookID }}</th>
+                    <td>{{ row.category }}</td>
+                    <td>{{ row.book_name }}</td>
+                    <td>{{ row.press }}</td>
+                    <td>{{ row.year }}</td>
+                    <td>{{ row.author }}</td>
+                    <td>{{ row.price }}</td>
+                    <td>{{ row.stock }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
