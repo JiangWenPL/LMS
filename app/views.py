@@ -108,7 +108,33 @@ def login():
         flash ( error, category='danger' )
     return render_template ( 'login.html', form=form, error=error )
 
-@app.route('/about')
+
+@app.route ( '/search' )
+def search():
+    return render_template ( 'search.html' )
+
+
+@app.route ( '/borrow' )
+@login_required
+def borrow():
+    return render_template ( 'borrow.html' )
+
+
+@app.route ( '/return_book' )
+@login_required
+def return_book():
+    return render_template ( 'return_book.html' )
+
+
+@app.route ( '/card' )
+@login_required
+def card():
+    return render_template ( 'card.html' )
+
+
+@app.route ( '/about' )
+def about():
+    return render_template ( 'about.html' )
 
 
 @app.route ( '/logout/' )
