@@ -3,9 +3,10 @@ __author__ = u'Jiang Wen'
 from flask import render_template, flash, request, abort, redirect, url_for, g
 from app import app, db, lm, csv_set
 from flask_login import login_user, login_required, logout_user, current_user
-from app.forms import LoginForm, CheckInForm, FileForm, SearchForm
+from app.forms import LoginForm, CheckInForm, FileForm, SearchForm, order_object
 from flask_bootstrap import Bootstrap
 from app.models import Admin, Book
+from sqlalchemy.sql import and_
 import csv
 
 Bootstrap ( app )
@@ -47,7 +48,7 @@ def check_in():
                 book = Book ( bookID=single_form.bookID.data, category=single_form.category.data,
                               book_name=single_form.book_name.data,
                               press=single_form.press.data, year=single_form.year.data, author=single_form.author.data,
-                              price=single_form.price.data,
+                              price=single_form.price.data, amount=single_form.stock.data,
                               stock=single_form.stock.data )
                 db.session.add ( book )
                 db.session.commit ()
@@ -68,12 +69,15 @@ def check_in():
                     for line in reader:
                         assert len ( line ) == Book.length, "Not match col size"
                         books.append (
-                            Book ( bookID=line[0], category=line[1], book_name=line[2], press=line[3], year=line[4],
-                                   author=line[5], price=line[6], stock=line[7] ) )
+                            Book ( bookID=line[0].strip (), category=line[1].strip (), book_name=line[2].strip (),
+                                   press=line[3].strip (), year=line[4].strip (),
+                                   author=line[5].strip (), price=line[6].strip (), amount=line[7].strip (),
+                                   stock=line[7].strip () ) )
                     db.session.add_all ( books )
                     db.session.commit ()
             except Exception as e:
                 flash ( e, 'danger' )
+                # raise e
             else:
                 flash ( 'Success load into database', 'success' )
         elif request.method == 'POST':
@@ -112,13 +116,37 @@ def login():
 @app.route ( '/search', methods=['GET', 'POST'] )
 def search():
     form = SearchForm ()
-    result = {}
+    result = []
     try:
         if request.method == 'POST' and form.validate_on_submit ():
             flash ( 'get it', 'info' )
-            result = Book.query.all ()
+            # raise ArithmeticError
+            rules = []
+            if form.bookID.data:
+                rules.append ( Book.bookID == str ( form.bookID.data ) )
+            if form.category.data:
+                rules.append ( Book.category == str ( form.category.data ) )
+            if form.author.data:
+                rules.append ( Book.author == str ( form.author.data ) )
+            if form.price_from.data:
+                rules.append ( Book.price >= float ( form.price_from.data ) )
+            if form.price_to.data:
+                rules.append ( Book.price <= float ( form.price_to.data ) )
+            if form.year_from.data:
+                rules.append ( Book.year >= int ( form.year_from.data ) )
+            if form.year_to.data:
+                rules.append ( Book.year <= int ( form.year_to.data ) )
+            if form.book_name.data:
+                rules.append ( Book.book_name == str ( form.book_name.data ) )
+            if form.press.data:
+                rules.append ( Book.press == str ( form.press.data ) )
+            result = Book.query.filter ( and_ ( *rules ) ).order_by ( order_object[form.order_by.data] ).all ()
+            # raise ArithmeticError
+        elif request.method == 'POST':
+            flash ( "Invalid search", 'warning' )
     except Exception as e:
         flash ( e, 'danger' )
+        raise e
     return render_template ( 'search.html', form=form, result=result )
 
 
