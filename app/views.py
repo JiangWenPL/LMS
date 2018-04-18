@@ -15,10 +15,12 @@ Bootstrap ( app )
 @app.before_first_request
 def init_view():
     # recreate database every time
-    db.drop_all ()
+    # db.drop_all ()
     db.create_all ()
     admins = [Admin ( 0, 'a', 'a.name', 'admin@example.com' ), Admin ( 1, 'b', 'b.name', 'bdmin@example.com' )]
-    db.session.add_all ( admins )
+    for admin in admins:
+        if Admin.query.get ( admin.id ) is None:
+            db.session.add ( admin )
     db.session.commit ()
     # Add login guider
     lm.login_view = url_for ( 'login' )
@@ -45,12 +47,18 @@ def check_in():
     if request.method == 'POST' and request.form['kinds'] == 'single':
         if single_form.validate_on_submit ():
             try:
-                book = Book ( bookID=single_form.bookID.data, category=single_form.category.data,
-                              book_name=single_form.book_name.data,
-                              press=single_form.press.data, year=single_form.year.data, author=single_form.author.data,
-                              price=single_form.price.data, amount=single_form.stock.data,
-                              stock=single_form.stock.data )
-                db.session.add ( book )
+                cur_book = Book ( bookID=single_form.bookID.data, category=single_form.category.data,
+                                  book_name=single_form.book_name.data,
+                                  press=single_form.press.data, year=single_form.year.data,
+                                  author=single_form.author.data,
+                                  price=single_form.price.data, amount=single_form.stock.data,
+                                  stock=single_form.stock.data )
+                db_book = Book.query.filter_by ( bookID=cur_book.bookID ).first ()
+                if db_book:
+                    db_book.stock += cur_book.stock
+                    db_book.amount += cur_book.stock
+                else:
+                    db.session.add ( cur_book )
                 db.session.commit ()
                 flash ( Book.query.all (), 'success' )
                 flash ( 'Check in book success', 'success' )
@@ -73,7 +81,13 @@ def check_in():
                                    press=line[3].strip (), year=line[4].strip (),
                                    author=line[5].strip (), price=line[6].strip (), amount=line[7].strip (),
                                    stock=line[7].strip () ) )
-                    db.session.add_all ( books )
+                    for cur_book in books:
+                        db_book = Book.query.filter_by ( bookID=cur_book.bookID ).first ()
+                        if db_book:
+                            db_book.stock += cur_book.stock
+                            db_book.amount += cur_book.stock
+                        else:
+                            db.session.add ( cur_book )
                     db.session.commit ()
             except Exception as e:
                 flash ( e, 'danger' )
