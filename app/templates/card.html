@@ -1,7 +1,110 @@
 {% extends 'base.html' %}
 
 {% block body %}
-    <div class="jumbotron">
-        <h1 class="display-3">TODO</h1>
+    <div class="row clearfix">
+        <div class="container">
+            <legend>Add new card</legend>
+            <div class="col-md-12 column">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active show" data-toggle="tab" href="#new">New cards</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#delete">Delete cards</a>
+                    </li>
+                </ul>
+                <div id="myTabContent" class="tab-content">
+                    <div class="tab-pane fade active show" id="new">
+                        <form method="POST" class="form-horizontal">
+                            <fieldset>
+                                {{ new_card.hidden_tag() }}
+                                <div class="form-group">
+                                    <div class="row clearfix">
+                                        <div class="col-md-4 column">
+                                            <label>Card ID</label>
+                                            <input type="text" class="form-control required" id="cardID"
+                                                   name="cardID"
+                                                   placeholder="Card ID" maxlength="16">
+                                        </div>
+                                        <div class="col-md-4 column">
+                                            <label>Name</label>
+                                            <input type="text" class="form-control required" id="name"
+                                                   name="name"
+                                                   placeholder="Name" maxlength="32">
+                                        </div>
+                                        <div class="col-md-4 column">
+                                            <label>Department</label>
+                                            <input type="text" class="form-control required" id="department"
+                                                   name="department"
+                                                   placeholder="Department" maxlength="32">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row clearfix">
+                                    <div class="col-md-6 column">
+                                        <label for="exampleSelect1">Category</label>
+                                        <select class="form-control form-control-sm" id="exampleSelect1"
+                                                name="category">
+                                            <option value="teacher">Teacher</option>
+                                            <option value="student">Student</option>
+                                            <option value="else">Else</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-offset-9">
+                                        <label>&nbsp;</label>
+                                        <br>
+                                        <input type="hidden" name="kinds" value="new">
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="delete">
+                        <form method="POST" class="form-horizontal">
+                            {{ delete_card.hidden_tag() }}
+                            <legend>Delete</legend>
+                            <div class="form-group">
+                                <input type="text" class="form-control required" id="cardID" name="cardID"
+                                       placeholder="Card ID" maxlength="16">
+                                <input type="hidden" name="kinds" value="delete">
+                                <label>&nbsp;</label>
+                                <br>
+                                <input type="hidden" name="kinds" value="delete">
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row"><br></div>
+        <h4 class="card-title">Search by item</h4>
+
+        <div class="row clearfix">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Card ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Department</th>
+                    <th scope="col">Category</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in cards %}
+                    <tr class={{ loop.cycle("","table-active") }}>
+                        <th scope="row">{{ row.cardID }}</th>
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.department }}</td>
+                        <td>{{ row.category }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endblock %}

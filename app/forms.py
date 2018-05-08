@@ -50,6 +50,18 @@ class SearchForm ( FlaskForm ):
     # order_by = StringField ( "order_by" )
 
 
+class NewCardForm ( FlaskForm ):
+    cardID = IntegerField ( "cardID", validators=[DataRequired ()] )
+    name = StringField ( "name", validators=[DataRequired ()] )
+    department = StringField ( "department", validators=[DataRequired ()] )
+    category = SelectField ( "category",
+                             choices=[("student", "student"), ("teacher", "teacher"), ("else", "else")] )
+
+
+class DeleteCardForm ( FlaskForm ):
+    cardID = IntegerField ( "cardID", validators=[DataRequired ()] )
+
+
 order_object = {"book_name": Book.book_name, "category": Book.category, "bookID": Book.bookID,
                 "press": Book.press, "year": Book.year, "author": Book.author, "price": Book.price,
                 "stock": Book.stock, "amount": Book.amount}

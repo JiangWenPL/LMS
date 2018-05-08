@@ -1,4 +1,5 @@
 from app import db
+import datetime
 
 
 # BaseModel = declarative_base ()
@@ -68,3 +69,44 @@ class Book ( db.Model ):
 
     def __repr__(self):
         return '<Book Name %r>' % self.book_name
+
+
+class Card ( db.Model ):
+    __tablename__ = "card"
+    length = 4
+    cardID = db.Column ( db.Integer, primary_key=True )
+    name = db.Column ( db.String ( 32 ) )
+    department = db.Column ( db.String ( 32 ) )
+    category = db.Column ( db.String ( 32 ) )
+
+    def __init__(self, cardID, name, departement, category):
+        try:
+            self.cardID = int ( cardID )
+            self.name = str ( name )
+            self.department = str ( departement )
+            self.category = str ( category )
+        except Exception as e:
+            print ( e )
+            raise e
+
+
+class Borrow ( db.Model ):
+    __tablename__ = "barrow"
+    bid = db.Column ( db.Integer, primary_key=True, autoincrement=True )
+    book_id = db.Column ( db.String ( 32 ), db.ForeignKey ( "book.bookID" ) )
+    card_id = db.Column ( db.Integer, db.ForeignKey ( "card.cardID", ondelete="CASCADE" ) )
+    borrow_date = db.Column ( db.DateTime, default=datetime.datetime.now () )
+    return_date = db.Column ( db.DateTime, default=datetime.datetime.now () + datetime.timedelta ( days=15 ) )
+    returned = db.Column ( db.Boolean )
+
+    def __init__(self, book_id, card_id, borrow_date, return_date, returned=False):
+        try:
+            self.book_id = str ( book_id )
+            self.card_id = int ( card_id )
+            self.borrow_date = datetime.datetime.strptime ( borrow_date, "%Y-%m-%d" )
+            self.return_date = datetime.datetime.strptime ( return_date, "%Y-%m-%d" )
+            assert self.return_date >= self.borrow_date, 'Return date should be greater than or equal to borrow date'
+            self.returned = returned
+        except Exception as e:
+            print ( e )
+            raise e

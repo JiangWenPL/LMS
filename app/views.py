@@ -3,9 +3,9 @@ __author__ = u'Jiang Wen'
 from flask import render_template, flash, request, abort, redirect, url_for, g
 from app import app, db, lm, csv_set
 from flask_login import login_user, login_required, logout_user, current_user
-from app.forms import LoginForm, CheckInForm, FileForm, SearchForm, order_object
+from app.forms import LoginForm, CheckInForm, FileForm, SearchForm, order_object, NewCardForm, DeleteCardForm
 from flask_bootstrap import Bootstrap
-from app.models import Admin, Book
+from app.models import Admin, Book, Card, Borrow
 from sqlalchemy.sql import and_
 import csv
 
@@ -167,6 +167,7 @@ def search():
 @app.route ( '/borrow' )
 @login_required
 def borrow():
+
     return render_template ( 'borrow.html' )
 
 
@@ -176,10 +177,45 @@ def return_book():
     return render_template ( 'return_book.html' )
 
 
-@app.route ( '/card' )
+@app.route ( '/card', methods=['GET', 'POST'] )
 @login_required
 def card():
-    return render_template ( 'card.html' )
+    new_card = NewCardForm ()
+    delete_card = DeleteCardForm ()
+    try:
+        if request.method == 'POST' and request.form['kinds'] == 'new':
+            flash ( 'Here' )
+            if new_card.validate_on_submit ():
+                cur_card = Card ( cardID=new_card.cardID.data, name=new_card.name.data,
+                                  departement=new_card.department.data, category=new_card.category.data )
+                if Card.query.filter_by ( cardID=cur_card.cardID ).first ():
+                    flash ( 'Duplicate card id', 'danger' )
+                else:
+                    db.session.add ( cur_card )
+                    db.session.commit ()
+                    flash ( 'Add card success', 'success' )
+            elif request.method == 'POST':
+                flash ( 'Invalid input', 'warning' )
+        elif request.method == 'POST' and request.form['kinds'] == 'delete':
+            if delete_card.validate_on_submit ():
+                cur_cardID = delete_card.cardID.data
+                cur_card = Card.query.filter_by ( cardID=cur_cardID ).first ()
+                record = Borrow.query.filter_by ( card_id=cur_card.cardID ).first ()
+                if cur_card and record is None:
+                    db.session.delete ( cur_card )
+                    db.session.commit ()
+                    flash('Delete card success', 'success')
+                elif record is not None:
+                    flash ( 'The book borrowed by this card has not been returned', 'danger' )
+                else:
+                    flash ( 'Card not exist', 'danger' )
+            elif request.method == 'POST':
+                flash ( 'Invalid input', 'warning' )
+        cards = Card.query.all ()
+    except Exception as e:
+        flash ( e, 'danger' )
+        raise e
+    return render_template ( 'card.html', new_card=new_card, delete_card=delete_card, cards=cards )
 
 
 @app.route ( '/about' )
