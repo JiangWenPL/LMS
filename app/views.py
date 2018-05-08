@@ -3,7 +3,8 @@ __author__ = u'Jiang Wen'
 from flask import render_template, flash, request, abort, redirect, url_for, g
 from app import app, db, lm, csv_set
 from flask_login import login_user, login_required, logout_user, current_user
-from app.forms import LoginForm, CheckInForm, FileForm, SearchForm, order_object, NewCardForm, DeleteCardForm
+from app.forms import LoginForm, CheckInForm, FileForm, SearchForm, order_object, NewCardForm, DeleteCardForm, \
+    BorrowForm
 from flask_bootstrap import Bootstrap
 from app.models import Admin, Book, Card, Borrow
 from sqlalchemy.sql import and_
@@ -164,14 +165,48 @@ def search():
     return render_template ( 'search.html', form=form, result=result )
 
 
-@app.route ( '/borrow' )
+@app.route ( '/borrow', methods=['GET', 'POST'] )
 @login_required
 def borrow():
+    form = BorrowForm ()
+    last_id = None
+    results = []
+    try:
+        if request.method == 'POST' and form.validate_on_submit ():
+            card_id = form.cardID.data
+            if Card.query.filter_by ( cardID=card_id ).first ():
+                last_id = card_id
+                if form.bookID.data:
+                    cur_book = Book.query.filter_by ( bookID=form.bookID.data ).first ()
+                    if cur_book:
+                        if cur_book.stock > 0:
+                            cur_book.stock -= 1
+                            cur_borrow = Borrow ( cur_book.bookID, card_id, form.days.data )
+                            db.session.add ( cur_borrow )
+                            db.session.commit ()
+                            flash ( "Borrow success", 'success' )
+                        else:
+                            newest_borrow = Borrow.query.filter_by ( book_id=cur_book.bookID ).order_by (
+                                Borrow.return_date ).first ()
+                            flash ( 'No book in stock', category='info' )
+                            flash ( 'The book will be returned in ' + newest_borrow.return_date.strftime ( "%Y-%m-%d" ),
+                                    category='info' )
+                    else:
+                        flash ( 'Book ID not exist', category='info' )
+                records = Borrow.query.filter_by ( card_id=card_id ).all ()
+                for record in records:
+                    results.append ( Book.query.filter_by ( bookID=record.book_id ).first () )
+            else:
+                flash ( 'Card not exist', 'warning' )
+        elif request.method == 'POST':
+            flash ( "Invalid input", 'warning' )
+    except Exception as e:
+        flash ( e, 'danger' )
+        raise e
+    return render_template ( 'borrow.html', form=form, last_id=last_id, result=results )
 
-    return render_template ( 'borrow.html' )
 
-
-@app.route ( '/return_book' )
+@app.route ( '/return_book', methods=['GET', 'POST'] )
 @login_required
 def return_book():
     return render_template ( 'return_book.html' )
@@ -204,7 +239,7 @@ def card():
                 if cur_card and record is None:
                     db.session.delete ( cur_card )
                     db.session.commit ()
-                    flash('Delete card success', 'success')
+                    flash ( 'Delete card success', 'success' )
                 elif record is not None:
                     flash ( 'The book borrowed by this card has not been returned', 'danger' )
                 else:

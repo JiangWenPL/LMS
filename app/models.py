@@ -91,7 +91,7 @@ class Card ( db.Model ):
 
 
 class Borrow ( db.Model ):
-    __tablename__ = "barrow"
+    __tablename__ = "borrow"
     bid = db.Column ( db.Integer, primary_key=True, autoincrement=True )
     book_id = db.Column ( db.String ( 32 ), db.ForeignKey ( "book.bookID" ) )
     card_id = db.Column ( db.Integer, db.ForeignKey ( "card.cardID", ondelete="CASCADE" ) )
@@ -99,13 +99,15 @@ class Borrow ( db.Model ):
     return_date = db.Column ( db.DateTime, default=datetime.datetime.now () + datetime.timedelta ( days=15 ) )
     returned = db.Column ( db.Boolean )
 
-    def __init__(self, book_id, card_id, borrow_date, return_date, returned=False):
+    def __init__(self, book_id, card_id, return_days=15, borrow_date=datetime.datetime.now ().date (), returned=False):
         try:
             self.book_id = str ( book_id )
             self.card_id = int ( card_id )
-            self.borrow_date = datetime.datetime.strptime ( borrow_date, "%Y-%m-%d" )
-            self.return_date = datetime.datetime.strptime ( return_date, "%Y-%m-%d" )
-            assert self.return_date >= self.borrow_date, 'Return date should be greater than or equal to borrow date'
+            # self.borrow_date = datetime.datetime.strptime ( borrow_date, "%Y-%m-%d" )
+            # self.return_date = datetime.datetime.strptime ( return_date, "%Y-%m-%d" )
+            self.borrow_date = borrow_date
+            assert return_days > 0, 'Should borrow at last 1 day'
+            self.return_date = (datetime.datetime.now () + datetime.timedelta ( days=int ( return_days ) )).date ()
             self.returned = returned
         except Exception as e:
             print ( e )

@@ -1,7 +1,85 @@
 {% extends 'base.html' %}
 
 {% block body %}
-    <div class="jumbotron">
-        <h1 class="display-3">TODO</h1>
+    <div class="row clearfix">
+        <div class="container">
+            <legend>Borrow book</legend>
+            <div class="col-md-12 column">
+                <form method="POST" class="form-horizontal">
+                    <fieldset>
+                        {{ form.hidden_tag() }}
+                        <div class="form-group">
+                            <div class="row clearfix">
+                                <div class="col-md-3 column">
+                                    <label>Card ID</label>
+                                    <input type="text" class="form-control required" id="cardID"
+                                           name="cardID"
+                                            {% if last_id %}
+                                           value="{{ last_id }}"
+                                            {% else %}
+                                           placeholder="cardID"
+                                            {% endif %}
+                                           maxlength="16">
+                                </div>
+                                <div class="col-md-3 column">
+                                    <label>Book ID</label>
+                                    <input type="text" class="form-control required" id="bookID"
+                                           name="bookID"
+                                           placeholder="bookID" maxlength="16">
+                                </div>
+                                <div class="col-md-3 column">
+                                    <label>Borrow time</label>
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control required" id="days"
+                                               name="days"
+                                               value="15" maxlength="16">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">Day(s)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-offset-10 column">
+                                    <label>&nbsp;</label>
+                                    <br>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col">Book ID</th>
+                <th scope="col">Category</th>
+                <th scope="col">Book Name</th>
+                <th scope="col">Press</th>
+                <th scope="col">Year</th>
+                <th scope="col">Author</th>
+                <th scope="col">Price</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Stock</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in result %}
+                <tr class={{ loop.cycle("","table-active") }}>
+                    <th scope="row">{{ row.bookID }}</th>
+                    <td>{{ row.category }}</td>
+                    <td>{{ row.book_name }}</td>
+                    <td>{{ row.press }}</td>
+                    <td>{{ row.year }}</td>
+                    <td>{{ row.author }}</td>
+                    <td>{{ row.price }}</td>
+                    <td>{{ row.amount }}</td>
+                    <td>{{ row.stock }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}

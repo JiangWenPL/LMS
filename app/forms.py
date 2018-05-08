@@ -50,6 +50,12 @@ class SearchForm ( FlaskForm ):
     # order_by = StringField ( "order_by" )
 
 
+class BorrowForm ( FlaskForm ):
+    cardID = IntegerField ( "cardID", validators=[DataRequired ()] )
+    bookID = StringField ( "bookID", validators=[Optional ()] )
+    days = IntegerField ( "days", validators=[Optional (), NumberRange ( 1, 10000 )] )
+
+
 class NewCardForm ( FlaskForm ):
     cardID = IntegerField ( "cardID", validators=[DataRequired ()] )
     name = StringField ( "name", validators=[DataRequired ()] )
