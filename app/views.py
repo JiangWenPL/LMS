@@ -4,7 +4,7 @@ from flask import render_template, flash, request, abort, redirect, url_for, g
 from app import app, db, lm, csv_set
 from flask_login import login_user, login_required, logout_user, current_user
 from app.forms import LoginForm, CheckInForm, FileForm, SearchForm, order_object, NewCardForm, DeleteCardForm, \
-    BorrowForm
+    BorrowForm, ReturnForm
 from flask_bootstrap import Bootstrap
 from app.models import Admin, Book, Card, Borrow
 from sqlalchemy.sql import and_
@@ -15,7 +15,7 @@ Bootstrap ( app )
 
 @app.before_first_request
 def init_view():
-    # recreate database every time
+    # Uncomment to recreate database every time
     # db.drop_all ()
     db.create_all ()
     admins = [Admin ( 0, 'a', 'a.name', 'admin@example.com' ), Admin ( 1, 'b', 'b.name', 'bdmin@example.com' )]
@@ -61,7 +61,6 @@ def check_in():
                 else:
                     db.session.add ( cur_book )
                 db.session.commit ()
-                flash ( Book.query.all (), 'success' )
                 flash ( 'Check in book success', 'success' )
             except Exception as e:
                 flash ( e, 'danger' )
@@ -132,37 +131,48 @@ def login():
 def search():
     form = SearchForm ()
     result = []
+    pagination = None
     try:
-        if request.method == 'POST' and form.validate_on_submit ():
+        # if request.form.to_dict () and form.validate_on_submit ():
+        if request.query_string:
+            # if request.method == 'GET' and form.validate ():
             flash ( 'get it', 'info' )
             # raise ArithmeticError
             rules = []
-            if form.bookID.data:
-                rules.append ( Book.bookID == str ( form.bookID.data ) )
-            if form.category.data:
-                rules.append ( Book.category == str ( form.category.data ) )
-            if form.author.data:
-                rules.append ( Book.author == str ( form.author.data ) )
-            if form.price_from.data:
-                rules.append ( Book.price >= float ( form.price_from.data ) )
-            if form.price_to.data:
-                rules.append ( Book.price <= float ( form.price_to.data ) )
-            if form.year_from.data:
-                rules.append ( Book.year >= int ( form.year_from.data ) )
-            if form.year_to.data:
-                rules.append ( Book.year <= int ( form.year_to.data ) )
-            if form.book_name.data:
-                rules.append ( Book.book_name == str ( form.book_name.data ) )
-            if form.press.data:
-                rules.append ( Book.press == str ( form.press.data ) )
-            result = Book.query.filter ( and_ ( *rules ) ).order_by ( order_object[form.order_by.data] ).all ()
+            if request.args.to_dict ().get ( 'bookID', '' ):
+                rules.append ( Book.bookID == str ( request.args.to_dict ().get ( 'bookID', '' ) ) )
+            if request.args.to_dict ().get ( 'category', '' ):
+                rules.append ( Book.category == str ( request.args.to_dict ().get ( 'category', '' ) ) )
+            if request.args.to_dict ().get ( 'author', '' ):
+                rules.append ( Book.author == str ( request.args.to_dict ().get ( 'author', '' ) ) )
+            if request.args.to_dict ().get ( 'price_from', '' ):
+                rules.append ( Book.price >= float ( request.args.to_dict ().get ( 'price_from', '' ) ) )
+            if request.args.to_dict ().get ( 'price_to', '' ):
+                rules.append ( Book.price <= float ( request.args.to_dict ().get ( 'price_to', '' ) ) )
+            if request.args.to_dict ().get ( 'year_from', '' ):
+                rules.append ( Book.year >= int ( request.args.to_dict ().get ( 'year_from', '' ) ) )
+            if request.args.to_dict ().get ( 'year_to', '' ):
+                rules.append ( Book.year <= int ( request.args.to_dict ().get ( 'year_to', '' ) ) )
+            if request.args.to_dict ().get ( 'book_name', '' ):
+                rules.append ( Book.book_name == str ( request.args.to_dict ().get ( 'book_name', '' ) ) )
+            if request.args.to_dict ().get ( 'press', '' ):
+                rules.append ( Book.press == str ( request.args.to_dict ().get ( 'press', '' ) ) )
+            page = request.args.get ( 'page', 1, type=int )
+            # result = Book.query.filter ( and_ ( *rules ) ).order_by ( order_object[form.order_by.data] ).all ()
+            pagination = Book.query.filter ( and_ ( *rules ) ).order_by (
+                order_object[request.args.to_dict ().get ( 'order_by', 'book_name' )] ).paginate (
+                page, per_page=2,
+                error_out=False
+            )
+            # pagination = Posts.query.order_by ( Posts.timestamp.desc () )
+            result = pagination.items
             # raise ArithmeticError
-        elif request.method == 'POST':
+        elif request.query_string:
             flash ( "Invalid search", 'warning' )
     except Exception as e:
         flash ( e, 'danger' )
         raise e
-    return render_template ( 'search.html', form=form, result=result )
+    return render_template ( 'search.html', form=form, result=result, pagination=pagination )
 
 
 @app.route ( '/borrow', methods=['GET', 'POST'] )
@@ -209,7 +219,36 @@ def borrow():
 @app.route ( '/return_book', methods=['GET', 'POST'] )
 @login_required
 def return_book():
-    return render_template ( 'return_book.html' )
+    form = ReturnForm ()
+    last_id = None
+    results = []
+    try:
+        if request.method == 'POST' and form.validate_on_submit ():
+            card_id = form.cardID.data
+            if Card.query.filter_by ( cardID=card_id ).first ():
+                last_id = card_id
+                if form.bookID.data:
+                    cur_borrow = Borrow.query.filter (
+                        and_ ( Borrow.book_id == form.bookID.data, Borrow.card_id == card_id ) ).first ()
+                    if cur_borrow:
+                        cur_book = Book.query.filter_by ( bookID=cur_borrow.book_id ).first ()
+                        cur_book.stock += 1
+                        db.session.delete ( cur_borrow )
+                        db.session.commit ()
+                        flash ( 'Return book success', 'success' )
+                    else:
+                        flash ( 'Book have not been borrowed', category='info' )
+                records = Borrow.query.filter_by ( card_id=card_id ).all ()
+                for record in records:
+                    results.append ( Book.query.filter_by ( bookID=record.book_id ).first () )
+            else:
+                flash ( 'Card not exist', 'warning' )
+        elif request.method == 'POST':
+            flash ( "Invalid input", 'warning' )
+    except Exception as e:
+        flash ( e, 'danger' )
+        raise e
+    return render_template ( 'return_book.html', form=form, last_id=last_id, result=results )
 
 
 @app.route ( '/card', methods=['GET', 'POST'] )

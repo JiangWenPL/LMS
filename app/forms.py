@@ -24,7 +24,7 @@ class CheckInForm ( FlaskForm ):
     press = StringField ( "press", validators=[DataRequired ()] )
     year = IntegerField ( "year", validators=[DataRequired (), NumberRange ( 0, 10000 )] )
     author = StringField ( "author", validators=[DataRequired ()] )
-    price = IntegerField ( "price", validators=[DataRequired (), NumberRange ()] )
+    price = FloatField ( "price", validators=[DataRequired (), NumberRange ()] )
     stock = IntegerField ( "stock", validators=[DataRequired (), NumberRange ( min=0 )] )
 
 
@@ -43,7 +43,7 @@ class SearchForm ( FlaskForm ):
     price_from = FloatField ( "price_from", validators=[Optional ()] )
     price_to = FloatField ( "price_to", validators=[Optional ()] )
     stock = IntegerField ( "stock", validators=[Optional ()] )
-    order_by = SelectField ( "order_by",
+    order_by = SelectField ( "order_by", validators=[Optional ()],
                              choices=[("book_name", 'book_name'), ("category", "category"), ("bookID", "bookID"),
                                       ("press", "press"), ("year", "year"), ("author", "author"), ("price", "price"),
                                       ("stock", "stock"), ("amount", "amount")] )
@@ -54,6 +54,11 @@ class BorrowForm ( FlaskForm ):
     cardID = IntegerField ( "cardID", validators=[DataRequired ()] )
     bookID = StringField ( "bookID", validators=[Optional ()] )
     days = IntegerField ( "days", validators=[Optional (), NumberRange ( 1, 10000 )] )
+
+
+class ReturnForm ( FlaskForm ):
+    cardID = IntegerField ( "cardID", validators=[DataRequired ()] )
+    bookID = StringField ( "bookID", validators=[Optional ()] )
 
 
 class NewCardForm ( FlaskForm ):

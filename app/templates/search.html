@@ -1,12 +1,13 @@
 {% extends 'base.html' %}
-
+{% import '_macros.html' as macros %}
 {% block body %}
     <div class="container">
         <h4 class="card-title">Search by item</h4>
 
         <p class="card-text">
-        <form method="POST" class="form-group-sm">
+        <form method="GET" class="form-group-sm">
             {{ form.hidden_tag() }}
+            {{ form.crsf_token }}
             <fieldset class="form-group">
                 <div class="row clearfix">
                     <div class="col-sm-4 column">
@@ -152,5 +153,8 @@
             {% endfor %}
             </tbody>
         </table>
+        {% if pagination %}
+            {{ macros.pagination_widget(pagination,'search') }}
+        {% endif %}
     </div>
 {% endblock %}
