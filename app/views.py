@@ -111,7 +111,7 @@ def login():
             user = Admin.query.filter_by ( id=form.username.data ).first ()
             if user is None:
                 error = 'Invalid username'
-            elif form.password.data != user.password:
+            elif not user.check_password_hash ( form.password.data ):
                 error = 'Invalid password'
             else:
                 login_user ( user=user, remember=form.remember.data )
@@ -132,8 +132,10 @@ def search():
     form = SearchForm ()
     result = []
     pagination = None
+    query_string = request.query_string
     try:
         # if request.form.to_dict () and form.validate_on_submit ():
+        # flash ( request.query_string, 'info' )
         if request.query_string:
             # if request.method == 'GET' and form.validate ():
             flash ( 'get it', 'info' )
@@ -161,7 +163,7 @@ def search():
             # result = Book.query.filter ( and_ ( *rules ) ).order_by ( order_object[form.order_by.data] ).all ()
             pagination = Book.query.filter ( and_ ( *rules ) ).order_by (
                 order_object[request.args.to_dict ().get ( 'order_by', 'book_name' )] ).paginate (
-                page, per_page=2,
+                page, per_page=10,
                 error_out=False
             )
             # pagination = Posts.query.order_by ( Posts.timestamp.desc () )
@@ -170,9 +172,16 @@ def search():
         elif request.query_string:
             flash ( "Invalid search", 'warning' )
     except Exception as e:
+        # flash ( 'Search error', 'danger' )
         flash ( e, 'danger' )
         raise e
-    return render_template ( 'search.html', form=form, result=result, pagination=pagination )
+    if request.query_string:
+        # flash ( str ( request.query_string ).split ( '\'' ), 'info' )
+        return render_template ( 'search.html', form=form, result=result, pagination=pagination, cur_url='search',
+                                 frag='&' + str ( request.query_string ).split ( "\'" )[1] )
+    else:
+        return render_template ( 'search.html', form=form, result=result, pagination=pagination, cur_url='search',
+                                 frag='' )
 
 
 @app.route ( '/borrow', methods=['GET', 'POST'] )
@@ -199,7 +208,9 @@ def borrow():
                             newest_borrow = Borrow.query.filter_by ( book_id=cur_book.bookID ).order_by (
                                 Borrow.return_date ).first ()
                             flash ( 'No book in stock', category='info' )
-                            flash ( 'The book will be returned in ' + newest_borrow.return_date.strftime ( "%Y-%m-%d" ),
+                            if newest_borrow:
+                                flash (
+                                    'The book will be returned in ' + newest_borrow.return_date.strftime ( "%Y-%m-%d" ),
                                     category='info' )
                     else:
                         flash ( 'Book ID not exist', category='info' )

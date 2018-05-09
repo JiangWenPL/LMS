@@ -1,4 +1,5 @@
 from app import db
+from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 
 
@@ -8,7 +9,7 @@ import datetime
 class Admin ( db.Model ):
     __tablename__ = "admin"
     id = db.Column ( db.Integer, primary_key=True )
-    password = db.Column ( db.String ( 32 ) )
+    password_hash = db.Column ( db.String ( 32 ) )
     name = db.Column ( db.String ( 32 ), index=True )
     contact = db.Column ( db.String ( 32 ), index=True )
 
@@ -29,6 +30,17 @@ class Admin ( db.Model ):
         self.password = password
         self.name = name
         self.contact = contact
+
+    @property
+    def password(self):
+        raise AttributeError ( "Password unaccessible" )
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash ( password )
+
+    def check_password_hash(self, password):
+        return check_password_hash ( self.password_hash, password )
 
     # For debug
     def __repr__(self):

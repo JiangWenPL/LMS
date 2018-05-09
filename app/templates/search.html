@@ -6,8 +6,6 @@
 
         <p class="card-text">
         <form method="GET" class="form-group-sm">
-            {{ form.hidden_tag() }}
-            {{ form.crsf_token }}
             <fieldset class="form-group">
                 <div class="row clearfix">
                     <div class="col-sm-4 column">
@@ -154,7 +152,7 @@
             </tbody>
         </table>
         {% if pagination %}
-            {{ macros.pagination_widget(pagination,'search') }}
+            {{ macros.pagination_widget(pagination, cur_url,frag) }}
         {% endif %}
     </div>
 {% endblock %}
