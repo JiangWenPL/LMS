@@ -63,7 +63,8 @@ def check_in():
                 db.session.commit ()
                 flash ( 'Check in book success', 'success' )
             except Exception as e:
-                flash ( e, 'danger' )
+                flash ( 'Check in fail', 'warning' )
+                # flash ( e, 'danger' )
         elif request.method == 'POST':
             flash ( 'Invalid input', 'warning' )
     elif request.method == 'POST' and request.form['kinds'] == 'group':
@@ -90,7 +91,8 @@ def check_in():
                             db.session.add ( cur_book )
                     db.session.commit ()
             except Exception as e:
-                flash ( e, 'danger' )
+                flash ( 'Batch check in fail', 'warning' )
+                # flash ( e, 'danger' )
                 # raise e
             else:
                 flash ( 'Success load into database', 'success' )
@@ -118,7 +120,8 @@ def login():
                 flash ( 'You were logged in', category='success' )
                 return redirect ( url_for ( 'index' ) )
         except Exception as e:
-            flash ( e, 'danger' )
+            flash ( 'login fail', 'primary' )
+            # flash ( e, 'danger' )
 
     elif request.method == 'POST':
         flash ( 'Invalid input', 'warning' )
@@ -138,7 +141,7 @@ def search():
         # flash ( request.query_string, 'info' )
         if request.query_string:
             # if request.method == 'GET' and form.validate ():
-            flash ( 'get it', 'info' )
+            # flash ( 'get it', 'info' )
             # raise ArithmeticError
             rules = []
             if request.args.to_dict ().get ( 'bookID', '' ):
@@ -172,10 +175,10 @@ def search():
         elif request.query_string:
             flash ( "Invalid search", 'warning' )
     except Exception as e:
-        # flash ( 'Search error', 'danger' )
-        flash ( e, 'danger' )
-        raise e
-    if request.query_string:
+        flash ( 'Search error', 'primary' )
+        # flash ( e, 'danger' )
+        # raise e
+    if request.query_string and str ( request.query_string ).split ( "\'" )[1]:
         # flash ( str ( request.query_string ).split ( '\'' ), 'info' )
         return render_template ( 'search.html', form=form, result=result, pagination=pagination, cur_url='search',
                                  frag='&' + str ( request.query_string ).split ( "\'" )[1] )
@@ -222,8 +225,9 @@ def borrow():
         elif request.method == 'POST':
             flash ( "Invalid input", 'warning' )
     except Exception as e:
-        flash ( e, 'danger' )
-        raise e
+        flash ( 'Borrow fail', 'warning' )
+        # flash ( e, 'danger' )
+        # raise e
     return render_template ( 'borrow.html', form=form, last_id=last_id, result=results )
 
 
@@ -257,8 +261,9 @@ def return_book():
         elif request.method == 'POST':
             flash ( "Invalid input", 'warning' )
     except Exception as e:
-        flash ( e, 'danger' )
-        raise e
+        # flash ( e, 'danger' )
+        # raise e
+        flash ( 'Return book error', 'warning' )
     return render_template ( 'return_book.html', form=form, last_id=last_id, result=results )
 
 
@@ -269,7 +274,6 @@ def card():
     delete_card = DeleteCardForm ()
     try:
         if request.method == 'POST' and request.form['kinds'] == 'new':
-            flash ( 'Here' )
             if new_card.validate_on_submit ():
                 cur_card = Card ( cardID=new_card.cardID.data, name=new_card.name.data,
                                   departement=new_card.department.data, category=new_card.category.data )
@@ -298,8 +302,9 @@ def card():
                 flash ( 'Invalid input', 'warning' )
         cards = Card.query.all ()
     except Exception as e:
-        flash ( e, 'danger' )
-        raise e
+        # flash ( e, 'danger' )
+        # raise e
+        flash ( 'Card operation fail', 'warning' )
     return render_template ( 'card.html', new_card=new_card, delete_card=delete_card, cards=cards )
 
 
